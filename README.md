@@ -21,16 +21,42 @@ Upload any PDF resume and automatically extract text with **PyMuPDF**, structure
 </p>
 
 <p>
+  <a href="#-why-this-project">Why This Project</a> •
+  <a href="#-real-world-use-cases">Use Cases</a> •
   <a href="#-agenda">Agenda</a> •
   <a href="#%EF%B8%8F-architecture">Architecture</a> •
   <a href="#-request-flow">Request Flow</a> •
-  <a href="#-tech-stack">Tech Stack</a> •
+  <a href="#-tech-stack--design-decisions">Tech Stack</a> •
   <a href="#-api-reference">API Reference</a> •
-  <a href="#-quick-commands">Quick Commands</a> •
-  <a href="#-project-structure">Project Structure</a>
+  <a href="#-quick-commands">Quick Commands</a>
 </p>
 
 </div>
+
+---
+
+## 💡 Why This Project?
+
+### The Problem
+1. **Unstructured PDFs are hard for software to read:** Every candidate formats their resume differently (columns, bullet styles, headings), making manual data entry slow and brittle regex parsers break easily.
+2. **Raw LLM responses can't be trusted directly:** Asking an AI model for plain text—or even unvalidated JSON—can return markdown fences, missing fields, or wrong data types (`"one year"` instead of `1.0`), which crashes downstream UIs and databases.
+
+### The Solution
+**AI Career Assistant** solves both problems with an end-to-end, schema-enforced AI pipeline:
+- **Extracts** clean text from any uploaded PDF locally using **PyMuPDF**.
+- **Parses** candidate information with **Groq LLM** using strict JSON-object prompting.
+- **Validates** every single response through a **Pydantic** schema (`ResumeAnalysis`) before saving or displaying it—guaranteeing predictable types (`list[str]`, `float | None`, `str | None`).
+- **Stores & Organizes** every analyzed resume in **MongoDB** so users can search candidates by name, filename, or skill, inspect raw extracted text vs. structured JSON, export reports, and manage history from one clean web interface.
+
+---
+
+## 🎯 Real-World Use Cases
+
+| Who | How They Use It | Value Delivered |
+| --- | --- | --- |
+| **Recruiters & Hiring Teams** | Upload batches of candidate PDFs and search saved profiles by skill or name | Turns messy resumes into uniform, searchable candidate cards in seconds |
+| **Job Seekers** | Upload their own resume PDF and compare **Extracted PDF Text** vs. **Structured Profile** | Reveals how automated ATS/AI parsers read their resume (catching missing phone/email or garbled formatting) |
+| **Developers & HR Tools** | Integrate `/upload` and `/resumes` REST endpoints into larger hiring or career workflows | Provides clean, Pydantic-validated JSON ready for ATS scoring, job matching, or analytics |
 
 ---
 
@@ -115,16 +141,28 @@ sequenceDiagram
 
 ---
 
-## 🧰 Tech Stack
+## 🧰 Tech Stack & Design Decisions
 
-| Category | Tools & Libraries |
-| --- | --- |
-| **Frontend** | React 18, Vite 6, Lucide Icons, Custom Responsive CSS |
-| **Backend API** | Python 3.10+, FastAPI, Uvicorn, `python-multipart` |
-| **PDF Parsing** | PyMuPDF (`pymupdf`) |
-| **LLM & Validation** | Groq Python SDK (`openai/gpt-oss-120b`), Pydantic v2 |
-| **Database** | MongoDB, Motor (`AsyncIOMotorClient`), PyMongo |
-| **Environment** | `python-dotenv` |
+| Category | Technology | Why It Was Chosen |
+| --- | --- | --- |
+| **Frontend** | React 18, Vite 6, Lucide Icons, Custom CSS | Fast interactive workspace for drag-and-drop PDF upload, multi-tab inspection (Profile / Raw Text / JSON), skill filtering, and history search |
+| **Backend API** | Python 3.10+, FastAPI, Uvicorn, `python-multipart` | Async-first REST API with automatic Swagger docs (`/docs`); uses `asyncio.to_thread` so synchronous LLM calls don't block the event loop |
+| **PDF Parsing** | PyMuPDF (`pymupdf`) | Fast, accurate in-memory PDF text extraction without external OS dependencies |
+| **LLM & Validation** | Groq SDK (`openai/gpt-oss-120b`), Pydantic v2 | Low-latency structured JSON extraction paired with strict runtime schema validation (`ResumeAnalysis.model_validate`) |
+| **Database** | MongoDB, Motor (`AsyncIOMotorClient`), PyMongo | Document storage fits nested JSON profiles (`skills[]`, `education[]`) naturally with async non-blocking reads/writes |
+| **Configuration** | `python-dotenv` | Keeps sensitive API keys (`GROQ_API_KEY`) and DB URIs out of source control via `.env` |
+
+---
+
+## ✨ Key Features & User Experience
+
+- **Drag-and-Drop PDF Uploader:** Validates `.pdf` files client- and server-side, displaying live pipeline progress (`Uploading -> Extracting -> Analyzing -> Saving`).
+- **3-Tab Candidate Inspector:**
+  - **Structured Profile:** Candidate avatar, click-to-copy email & phone pills, experience & skill metrics, professional summary, searchable skill badges, and education timeline.
+  - **Extracted PDF Text:** Full raw text extracted by PyMuPDF with one-click copy.
+  - **Raw JSON:** Exact Pydantic-validated payload with **Copy JSON** and **Export `.json`** download.
+- **MongoDB History Sidebar:** Instantly search saved resumes by candidate name, skill, or filename, refresh from MongoDB, or delete old entries.
+- **Live API Health Indicator:** Top bar checks backend connectivity (`GET /`) and warns clearly if FastAPI or MongoDB is offline.
 
 ---
 
