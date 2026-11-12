@@ -279,3 +279,21 @@ ai-career-assistant/
 - [ ] Job description matching & ATS compatibility score
 - [ ] Skill-gap analysis & tailored resume improvement suggestions
 - [ ] Candidate comparison view & exportable PDF reports
+
+---
+
+## 👤 Author
+
+**Mangala Ravindra Sai** — Full-Stack Developer & Applied AI Builder
+
+<p>
+  <a href="https://github.com/ravindracode">
+    <img src="https://img.shields.io/badge/GitHub-ravindracode-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub" />
+  </a>
+  <a href="https://linkedin.com/in/RavindraSai">
+    <img src="https://img.shields.io/badge/LinkedIn-RavindraSai-0A66C2?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn" />
+  </a>
+  <a href="mailto:ravindrasai44211@gmail.com">
+    <img src="https://img.shields.io/badge/Email-ravindrasai44211%40gmail.com-EA4335?style=flat-square&logo=gmail&logoColor=white" alt="Email" />
+  </a>
+</p>
